@@ -21,11 +21,10 @@ try
 	server.start()
 	console.log(&quot;\nstart server version=\#{server.version} .. \n port=\#{server.port}&quot;)
 catch err
-	console.error(err.message)</pre><br/><h3>動作条件</h3><ul><li>Node.jsのバージョン : 0.7.9</li><li>必要なモジュール(テンプレートエンジン) : jade または ejs</li></ul><p>&nbsp;</p><h2>使い方</h2><h3>ひな型の作成</h3><p>　newapp.plを使うと簡単にアプリケーションのひな型を作成できます。</p><blockquote>$ perl newapp.pl dirname</blockquote><p>* dirnameはアプリケーションのディレクトリ名です。</p><p>newapp.plを使うと下のようなディレクトリとファイルが作成されます。</p><pre>app1 (アプリケーション・ディレクトリ名)
+	console.error(err.message)</pre><br/><h3>動作条件</h3><ul><li>Node.jsのバージョン : 10.0</li><li>必要なモジュール(テンプレートエンジン) : jade または ejs</li></ul><p>&nbsp;</p><h2>使い方</h2><h3>ひな型の作成</h3><p>　newapp.plを使うと簡単にアプリケーションのひな型を作成できます。</p><blockquote>$ perl newapp.pl dirname</blockquote><p>* dirnameはアプリケーションのディレクトリ名です。</p><p>newapp.plを使うと下のようなディレクトリとファイルが作成されます。</p><pre>app1 (アプリケーション・ディレクトリ名)
 	app.coffee  (アプリケーション・ソース)
-	app.js  (JavaScriptに変換されたアプリケーション・ソース)
-	server.coffee (ライブラリ)
-	server.js (JavaScriptに変換されたライブラリ)
+	app.js
+	server.js
 	[public] (スタティックファイル用)
 		index.html
 		manual.html

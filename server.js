@@ -73,15 +73,14 @@ class Server {
         'Content-Type': 'application/json'
       });
     } else {
-      return response.writeHead(200, {
-        'Content-Type': 'text/html'
-      });
+      return; // response.writeHead(200, {'Content-Type': 'text/html'});
     }
   };
 
   /* リクエスト後処理 */
   after(request, response) {
-    return response.end();
+    if (request.method != "POST")
+      return response.end();
   };
 
 
@@ -129,16 +128,29 @@ class Server {
     for (let i = 0; i < len; i++) {
       let a = actions[i];
       let b = a.pattern;
-      if (b.endsWith("*") && request.url.includes('?') == false) {
+      if (b.endsWith("*") && request.url.includes('?') == false && request.url.match(b)) {
         let s = b.substring(0, b.length-2);
         if (request.method === a.method && request.url.startsWith(s))
-          response.writeHead(200, {'Content-Type': actions[i].mimetype});
-          response.write(a.action(request));
+          if (actions[i].header == false)
+            response.writeHead(200, {'Content-Type': actions[i].mimetype});
+          if (actions[i].method == "POST") {
+            a.action(request, response);
+          }
+          else {
+            response.write(a.action(request, response));
+          }
           return;
       }
       else if (request.method === a.method && request.url === b) {
-        response.writeHead(200, {'Content-Type': actions[i].mimetype});
-        response.write(a.action(request));
+        if (actions[i].header == false)
+          response.writeHead(200, {'Content-Type': actions[i].mimetype});
+        if (actions[i].method == "POST") {
+          a.action(request, response);
+        }
+        else {
+          let htm = a.action(request, response);
+          response.write(htm);
+        }
         return;
       }
     }
@@ -149,8 +161,9 @@ class Server {
       if (s.length < 2)
         continue;
       if (request.method === a.method && request.url.startsWith(s[0])) {
-        response.writeHead(200, {'Content-Type': actions[i].mimetype});
-        let htm = a.action(request);
+        if (actions[i].header == false)
+          response.writeHead(200, {'Content-Type': actions[i].mimetype});
+        let htm = a.action(request, response);
         response.write(htm);
         return;
       }
@@ -186,8 +199,8 @@ class Server {
       method: method,
       pattern: pattern,
       mimetype: mimetype,
-      action: (request) => {
-        return action(request, callback);
+      action: (request, response) => {
+        return action(request, response, callback);
       }
     });
     return this.actions.length;
