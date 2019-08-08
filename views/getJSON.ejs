@@ -10,7 +10,7 @@
    $("#submit").click(()=>{
        $.getJSON("/Ajax/", {"text1":$("#text1").val()},
         (data)=>{
-            $("#message").text(data);
+            $("#message").text(data['text1']);
         });
    });
  });

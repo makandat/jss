@@ -24,7 +24,8 @@ server.actions = [
      header: false,
      action: (request, response) => {
        return sv.Server.pug('about.pug', {
-          title: 'Sample App'
+          title: 'Sample App',
+          version: server.Version
        });
      }
   },
@@ -117,8 +118,7 @@ server.actions = [
       console.log("/Ajax/?");
       let vars = sv.Server.getParams(request);
       response.writeHead(200, {'Content-Type': server.actions[8].mimetype});
-      //return "{" + vars + "}";
-      return "{'text1':'Hello'}";
+      return JSON.stringify(vars);
     }
   }
 ];

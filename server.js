@@ -1,8 +1,8 @@
-// 簡易 HTTP サーバ for node.js ver 1.0  (2019-08-03)
+// 簡易 HTTP サーバ for node.js ver 1.02  (2019-08-03)
 'use strict';
 
 const PORT = 8124;
-const VERSION = "1.01";
+const VERSION = "1.02";
 const http = require("http");
 const url = require("url");
 const fs = require("fs");
@@ -188,20 +188,13 @@ class Server {
   }
 
   /* アクション追加 */
-  addAction(pattern, mimetype, action, method, callback) {
-    if (method == null) {
-      method = 'GET';
-    }
-    if (callback == null) {
-      callback = null;
-    }
+  addAction(pattern, callback, method='GET', mimetype='text/html', header=false) {
     this.actions.push({
       method: method,
       pattern: pattern,
       mimetype: mimetype,
-      action: (request, response) => {
-        return action(request, response, callback);
-      }
+      header: header,
+      action: callback
     });
     return this.actions.length;
   }
