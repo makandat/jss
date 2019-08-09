@@ -1,8 +1,8 @@
-// 簡易 HTTP サーバ for node.js ver 1.02  (2019-08-03)
+// 簡易 HTTP サーバ for node.js ver 1.03  (2019-08-09)
 'use strict';
 
 const PORT = 8124;
-const VERSION = "1.02";
+const VERSION = "1.03";
 const http = require("http");
 const url = require("url");
 const fs = require("fs");
@@ -51,6 +51,10 @@ class Server {
     } else if (request.url.match("\\.svg$")) {
       return response.writeHead(200, {
         'Content-Type': 'image/xml+svg'
+      });
+    } else if (request.url.match("\\.ico$")) {
+      return response.writeHead(200, {
+        'Content-Type': 'image/vnd.microsoft.icon'
       });
     } else if (request.url.match("\\.txt$")) {
       return response.writeHead(200, {
@@ -113,7 +117,7 @@ class Server {
     }
     // 静的画像ファイルのリクエスト
     for (let i = 0; i < len; i++) {
-      if (request.method === "GET" && request.url.includes('?') == false && (request.url.match("\\.jpg$|\\.png$|\\.gif$") || request.url == 'favicon.ico')) {
+      if (request.method === "GET" && request.url.includes('?') == false && (request.url.match("\\.jpg$|\\.png$|\\.gif$") || request.url == '/favicon.ico')) {
         console.log(request.method + " file=" + request.url);
         let file = "./public" + request.url;
         let img = null;
@@ -130,7 +134,7 @@ class Server {
       let b = a.pattern;
       if (b.endsWith("*") && request.url.includes('?') == false && request.url.match(b)) {
         let s = b.substring(0, b.length-2);
-        if (request.method === a.method && request.url.startsWith(s))
+        if (a.method.includes(request.method) && request.url.startsWith(s))
           if (actions[i].header == false)
             response.writeHead(200, {'Content-Type': actions[i].mimetype});
           if (actions[i].method == "POST") {
@@ -141,10 +145,10 @@ class Server {
           }
           return;
       }
-      else if (request.method === a.method && request.url === b) {
+      else if (a.method.includes(request.method) && request.url === b) {
         if (actions[i].header == false)
           response.writeHead(200, {'Content-Type': actions[i].mimetype});
-        if (actions[i].method == "POST") {
+        if (request.method == 'POST') {
           a.action(request, response);
         }
         else {
@@ -210,12 +214,12 @@ class Server {
     if (kvpair === undefined)
       return '';
     let value = kvpair.split("=")[1];
-    return unescape(value);
+    return decodeURI(value);
   }
 
   /* クッキーをセットする。*/
   setCookie(response, key, value) {
-    let escval = escape(value);
+    let escval = encodeURI(value);
     response.setHeader('Set-Cookie', [`${key}=${escval}`]);
   }
 
@@ -240,7 +244,8 @@ class Server {
   static simple(filename, vars) {
     let htm = fs.readFileSync("./views/" + filename, "utf-8");
     for (let key in vars) {
-      htm = htm.replace("(*" + key + "*)", vars[key]);
+      let pattern = new RegExp("\\(\\*" + key + "\\*\\)", "g");
+      htm = htm.replace(pattern, vars[key]);
     }
     return htm;
   };
