@@ -120,7 +120,7 @@ class Server {
       if (request.method === "GET" && request.url.includes('?') == false && (request.url.match("\\.jpg$|\\.png$|\\.gif$") || request.url == '/favicon.ico')) {
         console.log(request.method + " file=" + request.url);
         let file = "./public" + request.url;
-        let img = null;
+        let img = "";
         if (fs.existsSync(file)) {
           img = fs.readFileSync(file);
         }
@@ -153,7 +153,7 @@ class Server {
         }
         else {
           let htm = a.action(request, response);
-          response.write(htm);
+          return response.write(htm);
         }
         return;
       }
