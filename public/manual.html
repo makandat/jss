@@ -5,6 +5,7 @@
   <meta charset="utf-8"/>
   <title>simple_njs manual</title>
   <link rel="stylesheet" href="manual.css"/>
+  <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
 </head>
 
 <body>
@@ -13,9 +14,65 @@
   <h2>概要</h2>
     <p>　簡単 Node.js (simple_njs) は、Node.jsを使った小規模なウェブアプリケーションを手軽に作るためのフレームワークです。</p>
   <span class="caption">サンプル</span>
-  <pre>
+  <pre class="prettyprint">
+'use strict';
+const sv = require('./server.js');
+const server = new sv.Server();
+
+server.actions = [
+ {
+   method: 'GET',
+   pattern: '/',
+   mimetype: 'text/html',
+   header: false,
+   action: (request, response) => {
+     return '&lt;html>\n&lt;script>location.replace(\'/index.html\');&lt;/script>\n&lt;body style=\'font-size:larger;\'>\n	GO TO &lt;a href=\'/index.html\'>index.html&lt;/a>\n&lt;/body>\n&lt;/html>';
+   }
+ },
+ {
+   method: 'GET',
+   pattern: '/about',
+   mimetype: 'text/html',
+   header: false,
+   action: (request, response) => {
+       return sv.Server.ejs('about.ejs', {
+         title: 'Sample App',
+         version: server.Version
+       });
+    }
+  }
+];
 
 
+try {
+  server.start();
+  console.log("\nstart server version=" + server.Version + " .. \n port=" + server.Port);
+}
+catch (err) {
+  console.error(err.message);
+}
+  </pre>
+  <br />
+  <p>テンプレートファイル about.ejs は次の通り。文字コードは UTF-8 とする。</p>
+  <pre class="prettyprint">
+&lt;!DOCTYPE html>
+&lt;html>
+ &lt;head>
+  &lt;meta charset="utf-8" />
+  &lt;title>&lt;%= title %>&lt;/title>
+  &lt;style>
+   h1 {
+    text-align:center;
+   }
+  &lt;/style>
+ &lt;/head>
+
+ &lt;body>
+  &lt;h1>&lt;%= title %>&lt;/h1>
+  &lt;p style="text-align:center;">&lt;a href="/index.html">HOME&lt;/a>&lt;/p>
+  &lt;p style="text-align:center;font-size:2em;color:red;">バージョン &lt;%= version %>&lt;/p>
+ &lt;/body>
+&lt;/html>
   </pre>
   <br/>
   <h3>動作条件</h3>
@@ -26,10 +83,98 @@
     <p>&nbsp;</p>
   <h2>使い方</h2>
     <h3>ひな型の作成</h3>
+    <p>次のようなフォルダを作成する。</p>
+      <pre>
+ Appfolder/
+    app.js   ユーザが作成するアプリケーション
+    server.js  簡易 HTTP サーバ
+    public/
+      静的なファイル群 (例) home.png, index.html, favicon.ico
+    views/
+      テンプレートファイル群 (例) home.ejs, test.pug
+      </pre>
+    
     <p>&nbsp;</p>
 
     <h3>テンプレートの作成</h3>
-    <p>テンプレートファイルは、
+    <p>テンプレートファイルは、ejs, pug, simple(組み込み簡易テンプレート) が利用できる。ejs, pug は npm などでインストールする必要があるが、simple は組み込みなのでインストールは不要である。</p>
+    <p>使い方について、ejs, pug はそれぞれのドキュメントを参照。simple については、ただ一つのことを除き、単なる HTML である。ただ一つのこととは "(*key*)" という文字列があると、アプリケーションで指定した value 文字列で (*key*) を置き換えるということである。その際、HTMLエスケープなどの一切の処理は行わない。</p>
+    <p>下に simple テンプレートを示す。ここで置き換え対象文字列は (*title*), (*version*) である。</p>
+    <pre>
+&lt;!DOCTYPE html>
+&lt;html>
+ &lt;head>
+  &lt;meta charset="utf-8" />
+  &lt;title><span style="color:orange;">(*title*)</span>&lt;/title>
+  &lt;style>
+   body.body_style {
+     background-image: url("/img/lavender.gif");
+     margin-left:5%;
+     margin-right:5%;
+     color: #4422cc;
+   }
+   h1 {
+     padding: 10px;
+     text-align:center;
+     color: crimson;
+   }
+   h2 {
+     padding: 5px;
+     color: #0022dd;
+   }
+  &lt;/style>
+ &lt;/head>
 
+ &lt;body class="body_style">
+  &lt;h1>&lt;img src="/img/star.gif" alt="" /> <span style="color:orange;">(*title*)</span>&lt;/h1>
+  &lt;p style="text-align:center;">&lt;a href="/">HOME&lt;/a>&lt;/p>
+  &lt;br />
+  &lt;p style="text-align:center;font-size:2em;color:fuchsia;">バージョン <span style="color:orange;">(*version*)</span>&lt;/p>
+  &lt;p>&nbsp;&lt;/p>
+  &lt;p>&nbsp;&lt;/p>
+  &lt;p>&nbsp;&lt;/p>
+ &lt;/body>
+&lt;/html>
+    </pre>
+    <p>&nbsp;</p>
+  <h3>アプリケーションの作成</h3>
+    <p>アプリケーション(上の例では app.js)は次のような構造を持つ。</p>
+    <pre class="prettyprint">
+'use strict';
+const sv = require('./server.js');
+const server = new sv.Server();
+
+server.actions = [
+  // イベントハンドラの定義
+];
+
+
+// HTTP サーバ起動
+try {
+  server.start();
+  console.log("\nstart server version=" + server.Version + " .. \n port=" + server.Port);
+}
+catch (err) {
+  console.error(err.message);
+}    </pre>
+   <p>イベントハンドラの定義は次のようなオブジェクトの配列である。</p>
+   <ul>
+    <li>method  "GET", "POST", "GET|POST" のどれか。</li>
+    <li>pattern  ハンドラを起動するパターン。"/about", "/about/" は別のパターンとみなされる。"/about/*" は /about/の後に任意のパターンが続くことを示す。"/about/?" はパラメータが続くことを示す。ただし、? と * は排他とする。</li>
+    <li>mimetype  MIME タイプ (例) "image/jpeg"</li>
+    <li>header  ヘッダ出力を独自で行うかどうかを指定する。通常は false だが、クッキーを使う場合は true にして独自ヘッダーを出力する必要がある。</li>
+    <li>action  イベントハンドラの関数定義。function(request, response) {} という形式で、クライアントへの応答(通常はHTML)が関数値になる。ただし、POST リクエストの場合は、内部で応答を行い、何も返さない。</li>
+   </ul>
+   <br />
+    <p>イベントハンドラは、server.addAction(pattern, callback, method='GET', mimetype='text/html', header=false) メソッドで動的に追加することもできる。</p>
+    <p>(注意) 必ずルートハンドラ ("/" に対するハンドラ) はこのリストに含まれていること。</p>
+    <p>&nbsp;</p>
+  <h3>アプリケーションのテスト</h3>
+  <p>アプリケーションの起動は、node app.js で行うことができる。デフォルトのポートは 8124 である。curl コマンドあるいはブラウザでリクエストを行ってテストする。</p>
+  <p>console.log() でのデバッグは複雑になるほど困難なので、VS Code を利用するのがお勧めである。</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 </body>
 </html>
