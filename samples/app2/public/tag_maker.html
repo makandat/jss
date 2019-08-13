@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8" />
+ <title>Tag Maker (Node.js) マニュアル</title>
+ <link rel="stylesheet" href="manual.css" />
+</head>
+
+<body>
+<h1>Tag Maker (Node.js) マニュアル</h1>
+<p><a href="/">HOME</a>&nbsp;/&nbsp;<a href="manual.html">Simple njs</a></p>
+<h2>概要</h2>
+　Tag Maker (Node.js)は、HTMLタグを簡単に作るためのライブラリです。次のようなタグを作れます。
+<ul>
+<li><a href="#htmlTag">htmlTag(tag, attrs=null, text=null)</a>: 汎用のHTMLタグ作成関数</li>
+<li><a href="#styleAttr">styleAttr(hash)</a>: style属性の作成</li>
+<li><a href="#htmlAttr">htmlAttr(hash)</a>: HTMLタグの属性を作成</li>
+<li><a href="#bulletList">bulletList(tag, texts, attrs=null, li_attrs=null)</a>: 項目一覧 (ul, ol) を作成</li>
+<li><a href="#defineList">defineList(list, dl_attr=null, dt_attr=null, dd_attr=null)</a>: 定義一覧 (dl) を作成</li>
+<li><a href="#htmlTable">htmlTable(dataset, table_attr=null, th_attr=null, td_attr=null)</a>: 表 (table) を作成</li>
+<li><a href="#htmlForm">htmlForm(attrs, captions, controls)</a>: フォームを作成</li>
+</ul>
+<br />
+(jadeを使うときの注意事項)<br />
+　jadeでは文字列に含まれる&lt;や&gt;は&amp;lt;や&amp;gt;に変換される。これを避けるためには、次のように タグに変数を設定する演算子として "=" でなく "!=" を使用する。<br />
+<br />
+例
+<pre>
+!!!
+html
+	// テーブル
+	head
+		meta(charset='utf-8')
+		title bulletList
+		link(rel='stylesheet', href='default.css')
+	body
+		h1 htmlTable
+		p
+			a(href="/") HOME
+		// contentがプログラムから与えられるHTML文字列。
+		p!= content
+		p &nbsp;
+
+</pre>
+<p>&nbsp;</p>
+
+
+<h2>使い方</h2>
+(注意)　下のサンプルはCoffeeScriptで記述したものである。
+<pre>
+tm = require "./tag_maker"
+
+print = (s) ->
+	console.log(s)
+
+print "** Tag_Maker Test **"
+
+# tag
+print tm.htmlTag('br')
+print tm.htmlTag('br', null, 'Hello world!')
+print tm.htmlTag('img', {src:"/img/home.png", alt:"Home"})
+
+# style attributes
+print tm.styleAttr({"color":"red", "text-align":"center"})
+
+# attribute
+print tm.htmlAttr({"name":"text1", "id":"text", "size":80})
+
+# bullet list
+texts = ["apple", "banana", "cherry", "orange"]
+attr = {"style":"square"}
+li_attr = {"font-color":"black"}
+print tm.bulletList('ul', texts)
+print tm.bulletList('ul', texts, attr, li_attr)
+
+# define list
+list = [{title:"title1", detail:"detail1"}, {title:"title2", detail:"detail2"}, {title:"title3", detail:"detail3"}]
+print tm.defineList(list)
+dl_attr = {id:'define1'}
+print tm.defineList(list, dl_attr)
+dt_attr = {class:'dt1'}
+dd_attr = {class:'dd1'}
+print tm.defineList(list, null, dt_attr, dd_attr)
+
+# table
+dataset = [['title', 'url', 'tag'], ['title1', 'localhost', '0'], ['title2', '192.168.1.32', '1']]
+print tm.htmlTable(dataset)
+
+table_attr = {id:'table1'}
+th_attr = {class:'th1'}
+td_attr = {class:'td1'}
+print tm.htmlTable(dataset, table_attr, th_attr, td_attr)
+
+
+# form
+attr = {name:"form1", method:"get"}
+captions = ["text1", "option", ""]
+controls = ["&lt;input type='text' name='text1' /&gt;", <br />"&lt;input type='checkbox' name='check1' /&gt;", "&lt;input type='submit' value='submit' /&gt;"]
+print tm.htmlForm(attr, captions, controls)
+</pre>
+
+<p>&nbsp;</p>
+
+
+<h2>詳細</h2>
+
+<h3><a name="htmlTag"></a>htmlTag</h3>
+<div class="detail">
+# 機能: タグを作成する。<br />
+# パラメータ
+<blockquote>
+ tag: タグ (例) 'a', 'br' など<br />
+ attrs: タグの属性(ハッシュ)。(例) {class:"normal"}<br />
+ text: タグで囲まれる文字列。ただし、brタグの場合は、brタグの前に付加される。<br />
+</blockquote>
+# 戻り値: タグの文字列。(例) "&lt;a href=\"/index.html\"&gt;HOME&lt;/a&gt;\n"<br />
+</div>
+<p>&nbsp;</p>
+
+<h3><a name="styleAttr"></a>styleAttr</h3>
+<div class="detail">
+# 機能: style属性を作成する。<br />
+# パラメータ
+<blockquote>
+hash: スタイルの定義(ハッシュ)。(例) {'color':'red', 'font-size':'small'}<br />
+</blockquote>
+# 戻り値: スタイル属性の文字列。(例) " color:red font-size:small"<br />
+</div>
+<p>&nbsp;</p>
+
+<h3><a name="htmlAttr"></a>htmlAttr</h3>
+<div class="detail">
+# 機能: ハッシュからタグの属性文字列を生成する。<br />
+#パラメータ
+<blockquote>
+hash: タグの属性定義(ハッシュ)。(例) {class:'textbox', size:80}
+</blockquote>
+# 戻り値: 属性文字列。(例) "class=\"textbox\" size=\"80\""<br />
+</div>
+<p>&nbsp;</p>
+
+<h3><a name="bulletList"></a>bulletList</h3>
+<div class="detail">
+# 機能: リスト(ulやolタグ)を作成する。<br />
+# パラメータ
+<blockquote>
+tag: 'ul'または'ol'
+texts: liタグで挟まれる文字列(配列)。<br />
+attrs: ulタグまたはolタグの属性(ハッシュ)。(例) {class:'listClass'}<br />
+li_attrs: liタグの属性(ハッシュ)。(例) {style:'font-color:black'}<br />
+</blockquote>
+# 戻り値: リストの完全なHTML文字列<br />
+</div>
+<p>&nbsp;</p>
+
+<h3><a name="defineList"></a>defineList</h3>
+<div class="detail">
+# 機能: 定義(dlタグ)を作成する。<br />
+# パラメータ
+<blockquote>
+list: 定義の配列。定義は表題(title)と詳細(detail)からなる。(例) [{title:'その１', detail:'詳細その１'}, {title:'その２', detail:'詳細その２'}]<br />
+dl_attr: dlタグの属性(ハッシュ)　(例) {class:'defineList'}<br />
+dt_attr: dtタグの属性(ハッシュ)　(例) {class:'defineTitle'}<br />
+dd_attr: ddタグの属性(ハッシュ)　(例) {class:'defineDetail'}<br />
+</blockquote>
+# 戻り値：定義の完全なHTML文字列。<br />
+</div>
+<p>&nbsp;</p>
+
+<h3><a name="htmlTable"></a>htmlTable</h3>
+<div class="detail">
+# 機能: ２次元配列からHTMLテーブルを作成する。<br />
+# パラメータ
+<blockquote>
+dataset: データの２次元配列。<br />
+table_attr: tableタグの属性(ハッシュ)　(例) {class:'Table1'}<br />
+th_attr: thタグの属性(ハッシュ)　(例) {class:'Header1'}<br />
+このパラメータがnullでない場合、テーブルの最初の行はタイトル行とみなされる。<br />
+td_attr: tableタグの属性(ハッシュ)　(例) {class:'Td1'}<br />
+</blockquote>
+# 戻り値：テーブルの完全なHTML文字列。<br />
+</div>
+<p>&nbsp;</p>
+
+<h3><a name="htmlForm"></a>htmlForm</h3>
+<div class="detail">
+# 機能: HTMLフォームを作成する。<br />
+    フォームの中は２列ｎ行のテーブルで、第１列が表題、第２列がコントロールであるものとする。(例外があっても良い)。<br />
+# パラメータ<br />
+<blockquote>
+attrs: formタグの属性(ハッシュ)　(例) {type:'text', method:'POST'}<br />
+captions: １列目の内容。文字列の配列とする。<br />
+controls: ２列目の内容。文字列の配列とする。(例) "&lt;input type=\"button\" value=\"click\" /&gt;"<br />
+</blockquote>
+# 戻り値: フォームのHTML文字列。
+</div>
+<p>&nbsp;</p>
+
+
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</body>
+</html>

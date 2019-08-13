@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>simple_njs manual</title>
+<link rel="stylesheet" href="manual.css"/>
+</head>
+
+<body>
+
+<h1>簡単 Node.js (simple_njs)</h1>
+<p><a href="/">HOME</a>&nbsp;/&nbsp;<a href="tag_maker.html">Tag Maker</a></p>
+
+<h2>概要</h2>
+<p>　簡単 Node.js (simple_njs) は、Node.jsを使った小規模なウェブアプリケーションを手軽に作るためのフレームワークです。記述言語はコンパクトでわかりやすいCoffeeScriptで作成されています。<br/>
+* CoffeeScriptは容易にJavaScriptに変換できます。</p>
+
+<span class="caption">サンプル</span>
+<pre>sv = require './server.coffee'
+server = sv.server
+# / (root)
+root = (request) -&gt;
+   return '''
+		&lt;html&gt;
+		&lt;script&gt;location.replace('/index.html');&lt;/script&gt;
+		&lt;body style='font-size:larger;'&gt;
+		GO TO &lt;a href='/index.html'&gt;index.html&lt;/a&gt;
+		&lt;/body&gt;
+		&lt;/html&gt;
+	'''
+# /about
+about = (request) -&gt;
+	return sv.jade('about.jade', {title:'Sample App'})
+# add actions
+server.addAction('/', root)
+server.addAction('/about', about)
+# start server ...
+try
+	server.start()
+	console.log(&quot;\nstart server version=\#{server.version} .. \n port=\#{server.port}&quot;)
+catch err
+	console.error(err.message)
+</pre>
+<br />
+
+<h3>動作条件</h3>
+
+<ul>
+<li>Node.jsのバージョン : 0.7.9</li>
+<li>必要なモジュール(テンプレートエンジン) : jade または ejs</li>
+</ul>
+
+<p>&nbsp;</p>
+<h2>使い方</h2>
+<h3>ひな型の作成</h3>
+<p>　newapp.plを使うと簡単にアプリケーションのひな型を作成できます。</p>
+<blockquote>
+$ perl newapp.pl dirname
+</blockquote>
+<p>* dirnameはアプリケーションのディレクトリ名です。</p>
+<p>newapp.plを使うと下のようなディレクトリとファイルが作成されます。</p>
+<pre>
+app1 (アプリケーション・ディレクトリ名)
+	app.coffee  (アプリケーション・ソース)
+	app.js  (JavaScriptに変換されたアプリケーション・ソース)
+	server.coffee (ライブラリ)
+	server.js (JavaScriptに変換されたライブラリ)
+	[public] (スタティックファイル用)
+		index.html
+		manual.html
+		favicon.ico
+		[img]
+			star.gif
+		[js]
+			jquery.js
+	[views] (テンプレート用)
+		about.ejs
+		about.jade
+</pre>
+<p>　ユーザが編集する必要があるのは、app.coffee, index.html です。テンプレートファイルはサンプルなので削除してもかまいません。画像ファイルは追加したり削除してかまいません。favicon.icoは適切なものに置換してください。</p>
+
+<p>&nbsp;</p>
+<h3>テンプレートの作成</h3>
+<p>テンプレートファイルは、<a href="http://jade-lang.com/">jade形式</a>または<a href="https://github.com/visionmedia/ejs">ejs形式</a>で作成します。</p>
+
+<p>newapp.pl で作成したひな型に含まれるテンプレートのサンプル (about.jadeとabout.ejs) は次のようになっています。この例ではtitleが変数になっています。jadeでは=title、ejsでは<%= title %>でその値を設定しています。</p>
+
+<span>jade版about.jade</span>
+<pre>!!!
+html
+	head
+		meta(charset='utf-8')
+		title=title
+body
+	h1=title
+	p
+		a(href=&quot;/index.html&quot;) HOME
+	p &nbsp;</pre>
+<span> ejs版about.ejs</span>
+<pre>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+ &lt;meta charset=&quot;utf-8&quot; /&gt;
+ &lt;title&gt;&lt;%= title %&gt;
+&lt;/head&gt;
+&lt;body&gt;
+ &lt;h1&gt;&lt;%= title %&gt;&lt;/h1&gt;
+ &lt;p&gt;&lt;a href=&quot;/index.html&quot;&gt;HOME&lt;/a&gt;&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+<p>&nbsp;</p>
+<h3>スクリプトファイル app.coffee の編集</h3>
+<p>　newapp.plで、ひな型として作成された app.coffee は下のようになっています。</p>
+<pre>sv = require './server.coffee'
+server = sv.server
+# / (root)
+root = (request) -&gt;
+	return '''
+		&lt;html&gt;
+		&lt;script&gt;location.replace('/index.html');&lt;/script&gt;
+		&lt;body style='font-size:larger;'&gt;
+			GO TO &lt;a href='/index.html'&gt;index.html&lt;/a&gt;
+		&lt;/body&gt;
+		&lt;/html&gt;
+	'''
+# /about
+about = (request) -&gt;
+	return sv.jade('about.jade', {title:'Sample App'})
+# add actions
+server.addAction('/', root)
+server.addAction('/about', about)
+# start server ...
+try
+	server.start()
+	console.log(&quot;\nstart server version=\#{server.version} .. \n port=\#{server.port}&quot;)
+catch err
+	console.error(err.message)
+</pre>
+
+<h4>アクションの追加</h4>
+<p>　アクションとは送られてきたURL (request.url) のパターンに従って、起動されるハンドラです。このハンドラは関数値としてHTML (場合によっては他のオブジェクトのこともありうる) を返します。
+これは、コメント # add actions の下に、server.addAction メソッドを使って追加します。</p>
+<p>server.addAction のパラメータは、
+<ol>
+<li>URLのパターン。正規表現でもよい。(例) '/test/test10', '/getname/*'</li>
+<li>ハンドラの指定</li>
+<li>'GET'または'POST' (省略時は'GET')</li>
+</ol>
+と定義されています。<br/>
+(例)<blockquote>
+server.addAction('/query/?name=Suzuki&address=Tokyo', queryPerson, 'GET')&lt;server /update/person="/update/person" updatePerson="updatePerson" POST="POST" class="addAction"&gt;&lt;/server&gt;
+</blockquote></p>
+
+<p>&nbsp;</p>
+<h4>ハンドラの追加</h4>
+<p>アクションごとにハンドラを定義する必要があります。
+ひな型には、パターン'/'、'/about'に対するハンドラが定義されています。'/'に対するハンドラは必須なので、削除してはいけません(編集は可能)。'/about'に対するハンドラ (about) は不要なら削除しても構いません。<br/>
+ハンドラは特別なケースを除けば、HTMLを関数値として返す必要があります。このHTMLは直接、文字列として返してもよいですが、長い場合はテンプレートを使って作成できます。<br/>
+テンプレートからHTMLを作成するには、sv.jade または sv.ejs 関数を使用します。(詳細は「server.jsの詳細」参照)<br/>
+(例)
+<pre>handler1 = (request) -&gt;
+ return sv.ejs('query_result.ejs', {name:'Suzuki', address:'Tokyo'})
+</pre></p>
+
+
+
+<p>&nbsp;</p>
+<h2>server.js の詳細</h2>
+<h3>Server クラス</h3>
+<p>　ServerクラスはクライアントからのHTTPリクエストを解析して、適切なアクション・ハンドラを起動し、クライアントへ応答を返すためのクラスです。</p>
+
+<h4>コンストラクタ</h4>
+<p>コンストラクタはserver.js内部でインスタンス化されるので、直接インスタンス化しないでください。インスタンス化済みのオブジェクトの名前は、"server"です。</p>
+
+<h4>インスタンス変数</h4>
+<ul>
+<li>port ポート番号。デフォルトは8124</li>
+<li>actions アクション・ハンドラ一覧(配列)<br/>
+要素は次のようなオブジェクトである。addActionメソッドの代わりに直接、この内容を設定してもアクションの定義ができる。<br/>
+{method, pattern, action}<br/>
+methodは'GET'または'POST', patternはURLのパターン, actionはハンドラ。</li><li>cookie 出力するクッキーの文字列。<br/>
+(制限) クッキーは１個のみ出力可能。したがって、複数のパラメータ項目を出力したい場合は、アプリケーション側で処理を行うこと。</li>
+
+<li>version  バージョン文字列</li>
+</ul>
+
+<h4>start() メソッド</h4>
+<p>このメソッドはクライアントからのリクエストの監視を開始する。<br/>
+使用例
+<pre>
+server.start()</pre>
+</p>
+
+<h4>init() メソッド</h4>
+<p>
+start()メソッドが開始された直後に実行される。デフォルトでは何もしない。１回だけ実行したい処理を行うときに、オーバーライドして使用する。
+</p>
+
+<h4>addAction(pattern, handler, method='GET') メソッド</h4>
+<p>pattern文字列に対応したアクション(handler)を追加する。methodは'GET'(デフォルト)または'POST'とする。</p>
+
+<h4>before(request, response) メソッド</h4>
+<p>HTMLヘッダ (Content-Type) を返す。デフォルトは'text/html'だが、GETするスタティックなファイルの場合は、拡張子に従って適切なHTMLヘッダを返す。標準以外の動作が必要なときはオーバーライドする必要がある。</p>
+
+<h4>after(request, response) メソッド</h4>
+<p>Node.jsのメソッド response.end() を実行してレスポンスをクライアントへ返す。</p>
+
+<h4>dispatch(request, response) メソッド</h4>
+<p>request.urlを解析して、適切なハンドラをコールする。</p><h4>eventHandler(request, response)</h4><p>before, dispatch, afterの各メソッドを順にコールする。</p>
+
+<h4>getCookie(request)</h4>
+<p>HTTP_COOKIE を返す。request.headers.cookie と同じ内容である。</p>
+
+<p>&nbsp;</p>
+<h3>グローバル関数</h3>
+<h4>jade(filename, vars)</h4>
+<p>jadeを使ってテンプレートをレンダリングし、HTML文字列を返す。filenameはテンプレートファイル名でviewsディレクトリに置いてあるものとする。varsはオブジェクトでテンプレート内の変数を置換するのに使用する。<br/>
+(使用例)
+<pre>
+sv.jade('sample.jade', {name:'Suzuki', address:'Tokyo'})
+</pre>
+</p>
+
+<h4>ejs(filename, vars)</h4>
+<p>ejsを使ってテンプレートをレンダリングし、HTML文字列を返す。filenameはテンプレートファイル名でviewsディレクトリに置いてあるものとする。varsはオブジェクトでテンプレート内の変数を置換するのに使用する。<br/>
+(使用例)
+<pre>
+sv.ejs('sample.ejs', {name:'Suzuki', address:'Tokyo'})
+</pre>
+</p>
+
+<h4>parse_qs(urlstr)</h4>
+<p>QUERY_STRINGを解析して、名前：値のペアの一覧を取得する。urlstrはrequest.urlを与えるものとする。</p><br/>
+(使用例)
+<pre>
+params = sv.parse_qs(request.url)
+html = sv.ejs('sample.ejs', params)
+</pre>
+
+<h4>getParams(request)</h4>
+<p>requestオブジェクトから、クライアントが送ってきたQUERY_STRINGを解析して名前：値のペア一覧を取得して関数値として返す。内部的には、parse_qs関数を呼び出しているだけである。</p>
+
+<h4>postParams(request, callback)</h4>
+<p>クライアントからPOSTメソッドで送られてきたデータを解析して、名前：値のペア一覧を取得する。そのペア一覧はコールバック関数 callback へのパラメータとしてコールする。関数値としては名前：値のペア一覧を返さないので注意。</p>
+<br/>
+(使用例)
+<pre>
+sv.postParam(request, (params) -&gt;
+	console.log(params.name)
+	console.log(params.address)
+</pre>
+
+<h4>sleep(ms)</h4>
+<p>msミリ秒だけスリープする。</p>
+<p>&nbsp;</p>
+
+<h2>jQueryとともに使う例</h2>
+<p>次のサンプルは、テキストボックスと送信ボタンだけからなる簡単なフォームから、GETメソッドで文字列を送り、その文字列に含まれるすべての小文字を大文字に変換してクライアントへ返すjQueryの使用例です。<br/>
+(サーバ側の処理)
+</p>
+<pre>
+# jquery get
+jquery_get = (request) -&gt;
+	params = sv.parse_qs(request.url)
+	console.log(params)
+	return params.text1.toUpperCase()
+|
+# add action
+server.addAction('/jquery/*', jquery_get)
+|</pre>
+
+<p>下のjadeソースを元にして作成したHTMLは上のサービス(/jquery/*)をコールするためのものです。<br/>(参考) jadeからHTMLへのコンパイルは、次のようにjadeコマンドで行います。
+<blockquote>$ jade -P source</blockquote>
+</p>
+
+<pre>!!!
+html
+	head
+		title jquery test
+		script(src=&quot;/js/jquery.js&quot;)
+		script(src=&quot;/js/test_jquery.js&quot;)
+		link(rel=&quot;stylesheet&quot;, href=&quot;/default.css&quot;)
+	body
+		h1 jQuery Test
+		p
+			a(href=&quot;/&quot;) HOME
+		form#form1(method=&quot;GET&quot;)
+			span text1:
+			input#text1(type=&quot;text&quot;, name=&quot;text1&quot;)
+			br
+			input#button1(type=&quot;button&quot;, value=&quot;query&quot;)
+			br
+		div#answer
+		p &nbsp;
+</pre>
+<p>上のHTMLに含まれるscriptタグで指定している"/js/test_jquery.js"は下のCoffeeScriptから作成しています。CoffeeScriptからJavaScriptソースへの変換は次のようにします。</p>
+<blockquote>$ coffee -cb source</blockquote>
+<pre>
+# test_jquery.js
+$(document).ready(()=&gt;
+	$(&quot;#button1&quot;).bind('click', ()=&gt;
+		url = &quot;/jquery/?text1=&quot; + encodeURI($('#text1').val())
+		$.get(url, (data) -&gt;
+			$(&quot;#answer&quot;).html(data)
+		)
+	)
+)
+</pre>
+
+<p>&nbsp;</p><p>&nbsp;</p><p>&nbsp;</p>
+
+</body>
+</html>

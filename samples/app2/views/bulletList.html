@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>bulletList</title>
+    <link rel="stylesheet" href="/manual.css" />
+  </head>
+  <body>
+    <h1>リスト(ulやolタグ)を作成する</h1>
+    <div class="menubar"><a href="/">HOME</a></div>
+    <br />
+    <form method="POST" action="/bulletList/">
+      <div class="form_row"><label>タグ </label>
+        <select name="tag">
+          <option selected="selected" value="ul">ul</option>
+          <option value="ol">ol</option>
+        </select>
+      </div>
+      <div class="form_row"><label>liタグで挟まれる文字列 <input type="text" name="texts" size="50" /></label> (例) ["A", "B", "C"]</div>
+      <div class="form_row"><label>ulタグの属性 <input type="text" name="ulattr" /></label</div>
+      <div class="form_row"><label>liタグの属性 <input type="text" name="liattr" /></label</div>
+      <div class="form_row" style="margin-left:10%;"><label><input type="submit" value="submit" /></div>
+      <br />
+      <p style="text-align:center;font-size:2em;color:fuchsia;" id="result">(*result*)</p>
+    </form>
+  </body>
+</html>

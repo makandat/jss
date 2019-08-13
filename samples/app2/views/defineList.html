@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>defineList</title>
+    <link rel="stylesheet" href="/manual.css" />
+  </head>
+  <body>
+    <h1>定義(dlタグ)を作成する</h1>
+    <div class="menubar"><a href="/">HOME</a></div>
+    <br />
+    <form method="POST" action="/defineList/">
+        <div class="form_row"><label>定義の配列 <input type="text" name="list" size="80" /></label> (例) [{"title":"その１", "detail":"詳細その１"}, {"title":"その２", "detail":"詳細その２"}]</div>
+        <div class="form_row"><label>dlタグの属性 <input type="text" name="dl_attr" /></label> (例) {"class":"defineList"}</div>
+        <div class="form_row"><label>dtタグの属性 <input type="text" name="dt_attr" /></label> (例) {"class":"defineTitle"}</div>
+        <div class="form_row"><label>ddタグの属性 <input type="text" name="dd_attr" /></label> (例) {"class":"defineDetail"}</div>
+        <div class="form_row" style="margin-left:10%;"><label><input type="submit" value="submit" /></div>
+    </form>
+    <br />
+    <p style="text-align:center;font-size:2em;color:fuchsia;">(*result*)</p>
+  </body>
+</html>
